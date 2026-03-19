@@ -1,0 +1,6 @@
+node_modules/
+session/
+cache.json
+incremental-state.json
+*.xlsx
+.claude/

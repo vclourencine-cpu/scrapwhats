@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScrapWhats — iatize CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #0b1220;
+      --bg2:      rgba(15,24,42,.75);
+      --bg3:      rgba(18,30,52,.85);
+      --border:   rgba(255,255,255,.06);
+      --border2:  rgba(0,168,232,.2);
+      --accent:   #00A8E8;
+      --accent2:  #0057B8;
+      --success:  #10B981;
+      --warning:  #f59e0b;
+      --danger:   #ef4444;
+      --text:     #e2e8f0;
+      --text2:    #94a3b8;
+      --text3:    #475569;
+      --grad:     linear-gradient(135deg, #00A8E8 0%, #0057B8 100%);
+      --glow-a:   0 0 20px rgba(0,168,232,.25);
+      --glow-s:   0 0 20px rgba(16,185,129,.25);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 90% 60% at 15% -5%, rgba(0,87,184,.45) 0%, transparent 55%),
+        radial-gradient(ellipse 70% 50% at 85% 105%, rgba(0,168,232,.3) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(0,40,100,.2) 0%, transparent 70%);
+      background-attachment: fixed;
+      color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: rgba(11,18,32,.8);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      box-shadow: 0 1px 0 0 rgba(0,168,232,.08), 0 4px 24px rgba(0,0,0,.35);
+      padding: 14px 28px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 50;
+    }
+    .logo-icon {
+      width: 38px; height: 38px; background: var(--grad); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .logo-name { font-size: 17px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo-product {
+      font-size: 10px; font-weight: 700; color: var(--accent);
+      letter-spacing: 1.5px; text-transform: uppercase; margin-top: 1px;
+    }
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .status-pill {
+      display: flex; align-items: center; gap: 7px;
+      padding: 5px 12px; background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 20px; font-size: 12px; font-weight: 500; color: var(--text2);
+      transition: all .3s;
+    }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); transition: all .3s; }
+    .status-pill.connected { border-color: rgba(16,185,129,.3); }
+    .status-pill.connected .status-dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .status-pill.connecting .status-dot { background: var(--warning); animation: blink 1s infinite; }
+    @keyframes blink { 0%,100% { opacity:1 } 50% { opacity:.3 } }
+
+    /* ── Layout ── */
+    .main { max-width: 880px; margin: 0 auto; padding: 36px 24px 60px; }
+
+    /* ── Steps ── */
+    .steps { display: flex; align-items: center; margin-bottom: 40px; }
+    .step { display: flex; align-items: center; gap: 9px; }
+    .step-num {
+      height: 26px; width: auto; min-width: 52px; padding: 0 14px; border-radius: 20px;
+      border: 1.5px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: var(--text3);
+      flex-shrink: 0; transition: all .3s; letter-spacing: .3px;
+    }
+    .step-lbl { font-size: 12px; font-weight: 600; color: var(--text3); transition: color .3s; white-space: nowrap; }
+    .step.active .step-num { border-color: var(--accent); background: rgba(0,168,232,.18); color: var(--accent); box-shadow: 0 0 16px rgba(0,168,232,.4), inset 0 1px 0 rgba(255,255,255,.08); }
+    .step.active .step-lbl { color: var(--text); font-weight: 700; }
+    .step.done .step-num { border-color: var(--success); background: rgba(16,185,129,.18); color: var(--success); box-shadow: 0 0 14px rgba(16,185,129,.35); }
+    .step.done .step-lbl { color: var(--success); }
+    .step-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,.04), rgba(0,168,232,.15), rgba(255,255,255,.04)); margin: 0 12px; }
+
+    /* ── Cards ── */
+    .card {
+      background: rgba(15,24,42,.7);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 20px; padding: 26px 28px; margin-bottom: 18px;
+      box-shadow: 0 4px 32px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+      transition: box-shadow .3s, border-color .3s;
+    }
+    .card:hover { border-color: rgba(0,168,232,.15); box-shadow: 0 6px 40px rgba(0,0,0,.45), var(--glow-a), inset 0 1px 0 rgba(255,255,255,.05); }
+    .card-head { margin-bottom: 20px; }
+    .card-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .card-title svg { opacity: .7; }
+    .card-sub { font-size: 13px; color: var(--text2); }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 600;
+      cursor: pointer; border: none; font-family: inherit; transition: all .18s; user-select: none;
+    }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
+    .btn-primary { background: var(--grad); color: #fff; box-shadow: 0 4px 16px rgba(0,87,184,.4); }
+    .btn-primary:not(:disabled):hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,168,232,.5); }
+    .btn-success { background: var(--success); color: #fff; box-shadow: 0 4px 16px rgba(16,185,129,.35); }
+    .btn-success:not(:disabled):hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(16,185,129,.5); }
+    .btn-danger { background: rgba(239,68,68,.12); color: var(--danger); border: 1px solid rgba(239,68,68,.3); }
+    .btn-danger:not(:disabled):hover { background: rgba(239,68,68,.22); }
+    .btn-ghost { background: rgba(255,255,255,.03); color: var(--text2); border: 1px solid rgba(255,255,255,.1); }
+    .btn-ghost:hover { background: rgba(255,255,255,.07); color: var(--text); border-color: rgba(255,255,255,.18); }
+    .btn-lg { padding: 13px 28px; font-size: 15px; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    /* ── Risk Warning Banner ── */
+    .risk-banner {
+      background: linear-gradient(135deg, rgba(239,68,68,.05), rgba(245,158,11,.04));
+      border: 1px solid rgba(239,68,68,.18); border-radius: 16px;
+      padding: 18px 20px; margin-bottom: 20px;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    .risk-banner-title { font-size: 13px; font-weight: 700; color: var(--danger); display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+    .risk-banner ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .risk-banner li { font-size: 12px; color: var(--text2); line-height: 1.6; display: flex; gap: 8px; }
+    .risk-banner li::before { content: '▸'; color: var(--danger); flex-shrink: 0; }
+
+    /* ── QR Area ── */
+    .qr-wrapper { display: flex; flex-direction: column; align-items: center; gap: 22px; padding: 12px 0; }
+    .qr-box {
+      width: 240px; height: 240px; border-radius: 18px;
+      background: rgba(18,30,52,.6); border: 2px dashed rgba(0,168,232,.25);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+      transition: all .3s;
+    }
+    .qr-box.has-qr { background: white; border: 4px solid white; padding: 0; overflow: hidden; }
+    .qr-box.has-qr img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .qr-box-icon { opacity: .3; }
+    .qr-box-hint { font-size: 12px; color: var(--text3); text-align: center; padding: 0 16px; }
+    .qr-instruction { font-size: 12px; color: var(--text2); text-align: center; max-width: 280px; line-height: 1.7; }
+    .spinner {
+      width: 32px; height: 32px; border: 3px solid var(--border2);
+      border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Risk Meter ── */
+    .risk-meter {
+      background: rgba(11,18,32,.6); border: 1px solid rgba(255,255,255,.06);
+      border-radius: 14px; padding: 16px 18px; margin-bottom: 22px;
+    }
+    .risk-meter-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .risk-meter-label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; }
+    .risk-badge { font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px; letter-spacing: .5px; transition: all .3s; }
+    .risk-track { height: 7px; background: var(--bg2); border-radius: 4px; overflow: hidden; }
+    .risk-fill { height: 100%; border-radius: 4px; transition: width .4s ease, background .4s ease; width: 0%; }
+
+    /* ── Master Toggle ── */
+    .master-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 15px 18px; margin-bottom: 18px; cursor: pointer;
+      background: linear-gradient(135deg, rgba(0,168,232,.08), rgba(0,87,184,.08));
+      border: 1px solid rgba(0,168,232,.25); border-radius: 14px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .master-toggle:hover { border-color: rgba(0,168,232,.5); box-shadow: 0 0 16px rgba(0,168,232,.15); }
+    .master-info h3 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .master-info p { font-size: 12px; color: var(--text2); }
+
+    /* ── Toggle Switch ── */
+    .sw {
+      width: 40px; height: 22px; background: var(--border2); border-radius: 11px;
+      position: relative; flex-shrink: 0; transition: background .2s; cursor: pointer;
+    }
+    .sw::after {
+      content: ''; position: absolute; width: 16px; height: 16px; background: white;
+      border-radius: 50%; top: 3px; left: 3px; transition: transform .2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.4);
+    }
+    .sw.on { background: var(--accent); box-shadow: 0 0 10px rgba(0,168,232,.5); }
+    .sw.on::after { transform: translateX(18px); }
+
+    /* ── Protocol Toggles ── */
+    .proto-list { display: flex; flex-direction: column; gap: 10px; }
+    .proto-item {
+      display: flex; align-items: flex-start; gap: 14px; padding: 13px 15px;
+      background: rgba(18,30,52,.5); border: 1px solid rgba(255,255,255,.06); border-radius: 12px;
+      cursor: pointer; transition: border-color .2s, background .2s, box-shadow .2s; user-select: none;
+    }
+    .proto-item:hover { border-color: rgba(0,168,232,.25); background: rgba(0,168,232,.04); }
+    .proto-item.on { border-color: rgba(0,168,232,.35); background: rgba(0,168,232,.06); box-shadow: 0 0 14px rgba(0,168,232,.12); }
+    .proto-body { flex: 1; min-width: 0; }
+    .proto-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+    .proto-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+    .proto-tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; margin-top: 5px; letter-spacing: .3px; }
+
+    /* ── Group List ── */
+    .group-search {
+      width: 100%; padding: 10px 14px; background: rgba(11,18,32,.6);
+      border: 1px solid rgba(255,255,255,.08); border-radius: 10px; color: var(--text);
+      font-size: 13px; font-family: inherit; margin-bottom: 12px; outline: none; transition: border-color .2s, box-shadow .2s;
+    }
+    .group-search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,168,232,.12); }
+    .group-search::placeholder { color: var(--text3); }
+    .group-controls { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .group-controls-count { font-size: 12px; color: var(--text2); }
+    .group-controls-btns { display: flex; gap: 6px; }
+    .group-scroll { display: flex; flex-direction: column; gap: 5px; max-height: 300px; overflow-y: auto; padding-right: 2px; }
+    .group-scroll::-webkit-scrollbar { width: 3px; }
+    .group-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+    .group-item {
+      display: flex; align-items: center; gap: 11px; padding: 10px 13px;
+      background: rgba(18,30,52,.5); border: 1px solid rgba(255,255,255,.06); border-radius: 10px;
+      cursor: pointer; transition: all .15s; user-select: none;
+    }
+    .group-item:hover { border-color: rgba(0,168,232,.25); background: rgba(0,168,232,.04); }
+    .group-item.sel { border-color: rgba(0,168,232,.4); background: rgba(0,168,232,.07); box-shadow: 0 0 12px rgba(0,168,232,.1); }
+    .g-check {
+      width: 17px; height: 17px; border: 2px solid var(--border2);
+      border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      transition: all .15s; font-size: 10px; font-weight: 800; color: transparent;
+    }
+    .group-item.sel .g-check { background: var(--accent); border-color: var(--accent); color: white; }
+    .g-name { font-size: 13px; font-weight: 500; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .g-count { font-size: 11px; color: var(--text3); flex-shrink: 0; }
+
+    /* ── Progress ── */
+    .prog-track { height: 9px; background: var(--bg3); border-radius: 5px; overflow: hidden; margin-bottom: 8px; }
+    .prog-fill {
+      height: 100%; background: var(--grad); border-radius: 5px; transition: width .5s ease;
+      position: relative; overflow: hidden;
+    }
+    .prog-fill::after {
+      content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 40px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.25));
+      animation: shim 1.5s ease infinite;
+    }
+    @keyframes shim { 0%,100%{opacity:0} 50%{opacity:1} }
+    .prog-stats { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 18px; }
+    .log-console {
+      background: rgba(4,9,17,.8); border: 1px solid rgba(255,255,255,.06); border-radius: 12px;
+      padding: 12px 14px; font-family: 'Consolas','Monaco',monospace; font-size: 11.5px;
+      height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px;
+    }
+    .log-console::-webkit-scrollbar { width: 3px; }
+    .log-console::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+    .log-line { line-height: 1.7; }
+    .log-line.info { color: #64748b; }
+    .log-line.success { color: #10B981; }
+    .log-line.warn { color: #f59e0b; }
+    .log-line.error { color: #ef4444; }
+
+    /* ── Done ── */
+    .done-wrap { text-align: center; padding: 48px 32px; }
+    .done-ring {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: rgba(16,185,129,.1); border: 2px solid var(--success);
+      display: flex; align-items: center; justify-content: center; font-size: 30px;
+      margin: 0 auto 20px; animation: pop .4s cubic-bezier(.175,.885,.32,1.275);
+    }
+    @keyframes pop { from{transform:scale(.4);opacity:0} to{transform:scale(1);opacity:1} }
+    .done-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .done-sub { font-size: 13px; color: var(--text2); margin-bottom: 28px; }
+    .done-stats { display: flex; gap: 16px; justify-content: center; margin-bottom: 28px; }
+    .done-stat { background: rgba(18,30,52,.6); border: 1px solid rgba(255,255,255,.07); border-radius: 14px; padding: 14px 24px; }
+    .done-stat-val { font-size: 26px; font-weight: 800; color: var(--accent); }
+    .done-stat-lbl { font-size: 11px; color: var(--text2); margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
+    .done-btns { display: flex; gap: 12px; justify-content: center; }
+
+    /* ── Modal ── */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.75); backdrop-filter: blur(6px);
+      display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px;
+    }
+    .overlay.show { display: flex; }
+    .modal {
+      background: rgba(13,20,38,.9);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,.1); border-radius: 24px;
+      padding: 32px; width: 100%; max-width: 460px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.6), var(--glow-a);
+      animation: mIn .2s cubic-bezier(.175,.885,.32,1.275);
+    }
+    @keyframes mIn { from{opacity:0;transform:scale(.93) translateY(12px)} to{opacity:1;transform:scale(1) translateY(0)} }
+    .modal-icon { width: 54px; height: 54px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 18px; }
+    .modal-icon.ok   { background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.3); }
+    .modal-icon.warn { background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.3); }
+    .modal-icon.crit { background: rgba(239,68,68,.12);  border: 1px solid rgba(239,68,68,.3); }
+    .modal-title { font-size: 19px; font-weight: 800; margin-bottom: 8px; }
+    .modal-desc { font-size: 13px; color: var(--text2); line-height: 1.65; margin-bottom: 20px; }
+    .modal-summary {
+      background: rgba(11,18,32,.7); border: 1px solid rgba(255,255,255,.07); border-radius: 12px;
+      padding: 14px 16px; margin-bottom: 16px; font-size: 13px; line-height: 2;
+    }
+    .modal-disclaimer { font-size: 11px; color: var(--text3); line-height: 1.6; margin-bottom: 22px; }
+    .modal-actions { display: flex; gap: 10px; }
+    .modal-actions .btn { flex: 1; }
+
+    /* ── Action bar ── */
+    .action-bar { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
+    .sel-count { font-size: 13px; color: var(--text2); }
+
+    /* ── Separator ── */
+    .sep { height: 1px; background: var(--border); margin: 20px 0; }
+
+    /* ── Instagram CTA ── */
+    .insta-cta {
+      border-radius: 16px; overflow: hidden; margin-top: 18px;
+      background: linear-gradient(135deg, #2a0a2e 0%, #1a0a3e 50%, #0a1a3e 100%);
+      border: 1px solid rgba(188,24,136,.3);
+      animation: ctaIn .5s ease;
+    }
+    @keyframes ctaIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .insta-cta-inner {
+      display: flex; align-items: center; gap: 16px; padding: 20px 22px;
+    }
+    .insta-logo {
+      width: 52px; height: 52px; flex-shrink: 0; border-radius: 14px;
+      background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .insta-text { flex: 1; min-width: 0; }
+    .insta-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .insta-sub { font-size: 12px; color: var(--text2); line-height: 1.5; }
+    .insta-btn {
+      background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      color: white; white-space: nowrap; flex-shrink: 0; text-decoration: none;
+      padding: 10px 18px; font-size: 13px;
+    }
+    .insta-btn:hover { opacity: .88; transform: translateY(-1px); }
+    @media (max-width: 560px) {
+      .insta-cta-inner { flex-direction: column; text-align: center; }
+      .insta-btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="logo-icon">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <circle cx="5.5" cy="12" r="3.5" fill="white"/>
+      <circle cx="18.5" cy="5.5" r="2.5" fill="white" opacity=".85"/>
+      <circle cx="18.5" cy="18.5" r="2.5" fill="white" opacity=".85"/>
+      <line x1="8.5" y1="10.2" x2="16.2" y2="6.8" stroke="rgba(0,0,0,.6)" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="8.5" y1="13.8" x2="16.2" y2="17.2" stroke="rgba(0,0,0,.6)" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div>
+    <div class="logo-name">iatize</div>
+    <div class="logo-product">ScrapWhats</div>
+  </div>
+  <div class="header-right">
+    <div class="status-pill" id="statusPill">
+      <div class="status-dot"></div>
+      <span id="statusTxt">Desconectado</span>
+    </div>
+  </div>
+</header>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- Steps -->
+  <div class="steps">
+    <div class="step active" id="s1"><div class="step-num" id="sn1">1</div><span class="step-lbl">Conectar</span></div>
+    <div class="step-line"></div>
+    <div class="step" id="s2"><div class="step-num" id="sn2">2</div><span class="step-lbl">Grupos</span></div>
+    <div class="step-line"></div>
+    <div class="step" id="s3"><div class="step-num" id="sn3">3</div><span class="step-lbl">Extrair</span></div>
+  </div>
+
+  <!-- ═══ STEP 1: Connect ═══ -->
+  <div id="vConnect">
+
+    <!-- Security Card -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Protocolos de Segurança
+        </div>
+        <div class="card-sub">Escolha o nível de proteção para o seu número antes de conectar</div>
+      </div>
+
+      <!-- Risk Meter -->
+      <div class="risk-meter">
+        <div class="risk-meter-top">
+          <span class="risk-meter-label">Nível de Risco</span>
+          <span class="risk-badge" id="riskBadge">—</span>
+        </div>
+        <div class="risk-track"><div class="risk-fill" id="riskFill"></div></div>
+      </div>
+
+      <!-- Master Toggle -->
+      <div class="master-toggle" onclick="toggleMaster()">
+        <div class="master-info">
+          <h3>🛡️ Segurança Máxima</h3>
+          <p>Ativa todos os protocolos simultaneamente</p>
+        </div>
+        <div class="sw" id="masterSw"></div>
+      </div>
+
+      <!-- Individual Protocols -->
+      <div class="proto-list" id="protoList"></div>
+    </div>
+
+    <!-- QR Connect Card -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18" stroke-width="3"/></svg>
+          Conectar ao WhatsApp
+        </div>
+        <div class="card-sub">Escaneie o QR Code com o celular para autenticar</div>
+      </div>
+
+      <div class="qr-wrapper">
+        <div class="qr-box" id="qrBox">
+          <svg class="qr-box-icon" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="5" y="5" width="3" height="3" fill="#475569" rx=".5"/>
+            <rect x="16" y="5" width="3" height="3" fill="#475569" rx=".5"/><rect x="5" y="16" width="3" height="3" fill="#475569" rx=".5"/>
+            <circle cx="17" cy="17" r="1.5" fill="#475569"/><circle cx="20" cy="14" r="1" fill="#475569"/>
+            <circle cx="14" cy="20" r="1" fill="#475569"/><circle cx="20" cy="20" r="1.5" fill="#475569"/>
+          </svg>
+          <div class="qr-box-hint" id="qrHint">Clique em Conectar para gerar o QR</div>
+        </div>
+
+        <div class="qr-instruction" id="qrInstruct" style="display:none">
+          📱 <strong>WhatsApp</strong> → Configurações → Aparelhos conectados → Conectar um aparelho
+        </div>
+
+        <button class="btn btn-primary btn-lg" id="btnConnect" onclick="connect()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Conectar
+        </button>
+      </div>
+    </div>
+
+    <!-- Risk Warning (bottom) -->
+    <div class="risk-banner">
+      <div class="risk-banner-title">⚠️ Leia antes de usar</div>
+      <ul>
+        <li>Esta ferramenta usa automação não-oficial do WhatsApp Web e pode violar os Termos de Serviço do WhatsApp.</li>
+        <li>Existe risco real de bloqueio temporário ou permanente do número utilizado. <strong>Use sempre um número secundário.</strong></li>
+        <li>Os protocolos de segurança reduzem, mas não eliminam o risco de detecção.</li>
+        <li>Você é o único responsável pelo uso desta ferramenta e suas consequências legais.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 2: Groups ═══ -->
+  <div id="vConfig" style="display:none">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Grupos do WhatsApp
+        </div>
+        <div class="card-sub">Selecione quais grupos deseja varrer</div>
+      </div>
+
+      <input class="group-search" id="groupSearch" type="text" placeholder="🔍  Buscar grupo pelo nome..." oninput="filterGroups()">
+
+      <div class="group-controls">
+        <span class="group-controls-count" id="groupCtCount">—</span>
+        <div class="group-controls-btns">
+          <button class="btn btn-ghost btn-sm" onclick="selectAll()">Todos</button>
+          <button class="btn btn-ghost btn-sm" onclick="deselectAll()">Limpar</button>
+        </div>
+      </div>
+
+      <div class="group-scroll" id="groupScroll"></div>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn btn-ghost" onclick="goBack()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Voltar e ajustar segurança
+      </button>
+      <div style="display:flex;align-items:center;gap:16px">
+        <span class="sel-count" id="selCount">0 grupos selecionados</span>
+        <button class="btn btn-success btn-lg" id="btnStart" onclick="openConfirm()" disabled>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Iniciar Varredura
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 3: Progress ═══ -->
+  <div id="vProgress" style="display:none">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#00A8E8" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Varredura em Andamento
+        </div>
+        <div class="card-sub" id="progGroupName">Iniciando...</div>
+      </div>
+
+      <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      <div class="prog-stats">
+        <span id="progText">0 / 0 grupos</span>
+        <span id="progPct">0%</span>
+      </div>
+
+      <!-- Instagram CTA — acima do log durante o processamento -->
+      <div class="insta-cta" style="margin-top:0;margin-bottom:16px">
+        <div class="insta-cta-inner">
+          <div class="insta-logo">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+              <circle cx="12" cy="12" r="4"/>
+              <circle cx="17.5" cy="6.5" r="1" fill="white" stroke="none"/>
+            </svg>
+          </div>
+          <div class="insta-text">
+            <div class="insta-title">Se essa ferramenta foi útil para você</div>
+            <div class="insta-sub">Siga a <strong>@iatize.ia</strong> no Instagram e fique por dentro de novidades, automações e soluções com IA</div>
+          </div>
+          <a class="btn insta-btn" href="https://www.instagram.com/iatize.ia/" target="_blank" rel="noopener">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+            Seguir @iatize.ia
+          </a>
+        </div>
+      </div>
+
+      <div class="log-console" id="logConsole">
+        <div class="log-line info">[sistema] Iniciando varredura...</div>
+      </div>
+    </div>
+
+    <!-- Instagram CTA — visível durante o processamento (removido daqui, movido para dentro do card) -->
+    <div class="insta-cta" style="display:none">
+      <div class="insta-cta-inner">
+        <div class="insta-logo">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.5" cy="6.5" r="1" fill="white" stroke="none"/>
+          </svg>
+        </div>
+        <div class="insta-text">
+          <div class="insta-title">Se essa ferramenta foi útil para você</div>
+          <div class="insta-sub">Siga a <strong>@iatize.ia</strong> no Instagram e fique por dentro de novidades, automações e soluções com IA</div>
+        </div>
+        <a class="btn insta-btn" href="https://www.instagram.com/iatize.ia/" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+          Seguir @iatize.ia
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 4: Done ═══ -->
+  <div id="vDone" style="display:none">
+    <div class="card done-wrap">
+      <div class="done-ring">✓</div>
+      <div class="done-title">Extração Concluída!</div>
+      <div class="done-sub">Todos os contatos foram extraídos com sucesso</div>
+
+      <div class="done-stats">
+        <div class="done-stat">
+          <div class="done-stat-val" id="doneContacts">—</div>
+          <div class="done-stat-lbl">Contatos</div>
+        </div>
+        <div class="done-stat">
+          <div class="done-stat-val" id="doneGroups">—</div>
+          <div class="done-stat-lbl">Grupos</div>
+        </div>
+      </div>
+
+      <div class="done-btns">
+        <button class="btn btn-primary btn-lg" id="btnDownload" onclick="downloadFile()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Baixar Excel
+        </button>
+        <button class="btn btn-ghost btn-lg" onclick="location.reload()">Nova Varredura</button>
+      </div>
+    </div>
+
+    <!-- Instagram CTA — visível na tela de conclusão -->
+    <div class="insta-cta">
+      <div class="insta-cta-inner">
+        <div class="insta-logo">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.5" cy="6.5" r="1" fill="white" stroke="none"/>
+          </svg>
+        </div>
+        <div class="insta-text">
+          <div class="insta-title">Se essa ferramenta foi útil para você</div>
+          <div class="insta-sub">Siga a <strong>@iatize.ia</strong> no Instagram e fique por dentro de novidades, automações e soluções com IA</div>
+        </div>
+        <a class="btn insta-btn" href="https://www.instagram.com/iatize.ia/" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+          Seguir @iatize.ia
+        </a>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══ Download CTA Modal ═══ -->
+<div class="overlay" id="dlOverlay" onclick="if(event.target===this)closeDlModal()">
+  <div class="modal" style="text-align:center">
+    <div style="width:64px;height:64px;margin:0 auto 20px;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border-radius:16px;display:flex;align-items:center;justify-content:center">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.5" fill="white" stroke="none"/></svg>
+    </div>
+    <div class="modal-title">Que bom que foi útil! 🎉</div>
+    <div class="modal-desc">
+      A <strong>iatize</strong> cria ferramentas como essa gratuitamente. Se te ajudou, considere seguir o perfil no Instagram — ajuda muito a manter o projeto ativo!
+    </div>
+    <a class="btn insta-btn" href="https://www.instagram.com/iatize.ia/" target="_blank" rel="noopener" style="width:100%;justify-content:center;margin-bottom:12px;font-size:15px;padding:13px 20px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+      Seguir @iatize.ia no Instagram
+    </a>
+    <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="confirmDownload()">
+      Já sigo — baixar arquivo
+    </button>
+  </div>
+</div>
+
+<!-- ═══ Confirm Modal ═══ -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeConfirm()">
+  <div class="modal">
+    <div class="modal-icon" id="mIcon">⚠️</div>
+    <div class="modal-title" id="mTitle">Confirmar Varredura</div>
+    <div class="modal-desc" id="mDesc"></div>
+    <div class="modal-summary" id="mSummary"></div>
+    <div class="modal-disclaimer">
+      Ao continuar, você confirma que leu os avisos de risco, entende as implicações desta operação e assume total responsabilidade pelo uso desta ferramenta.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn" id="mConfirmBtn" onclick="startScrape()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+// PROTOCOLS CONFIG
+// ════════════════════════════════════════════
+const PROTOCOLS = [
+  {
+    id: 'randomDelays',
+    name: 'Delays aleatórios',
+    desc: 'Intervalo variável de 800ms a 3.2s entre consultas — imita comportamento humano',
+    weight: 25, default: true
+  },
+  {
+    id: 'longPauses',
+    name: 'Pausas longas periódicas',
+    desc: 'Pausa de 15–30s a cada 10 grupos processados — simula interrupções naturais',
+    weight: 20, default: true
+  },
+  {
+    id: 'randomOrder',
+    name: 'Ordem aleatória dos grupos',
+    desc: 'Processa grupos em ordem aleatória — evita padrões sequenciais detectáveis',
+    weight: 10, default: true
+  },
+  {
+    id: 'useCache',
+    name: 'Cache local de contatos',
+    desc: 'Reutiliza nomes já consultados — elimina requisições duplicadas entre execuções',
+    weight: 20, default: true
+  },
+  {
+    id: 'skipNameLookup',
+    name: 'Pular busca de nomes',
+    desc: 'Extrai só números sem consultar a API — reduz ~90% das requisições geradas',
+    weight: 30, default: false
+  },
+  {
+    id: 'incrementalMode',
+    name: 'Modo incremental (5 grupos/execução)',
+    desc: 'Distribui a varredura ao longo do tempo — nunca processa tudo de uma vez',
+    weight: 15, default: false
+  }
+];
+
+const MAX_RISK = PROTOCOLS.reduce((s, p) => s + p.weight, 0); // 120
+
+// ════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════
+let ws = null;
+let allGroups = [];
+let selected = new Set();
+let doneFilename = '';
+let isMaster = false;
+let scrapeStartTime = 0;
+let pendingDoneData = null;
+const MIN_SHOW_MS = 5000;
+
+const cfg = {};
+PROTOCOLS.forEach(p => cfg[p.id] = p.default);
+
+// ════════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════════
+function boot() {
+  renderProtos();
+  updateRisk();
+}
+
+// ════════════════════════════════════════════
+// PROTOCOLS UI
+// ════════════════════════════════════════════
+function tagStyle(w) {
+  if (w >= 25) return 'background:rgba(239,68,68,.15);color:#ef4444';
+  if (w >= 15) return 'background:rgba(245,158,11,.15);color:#f59e0b';
+  return 'background:rgba(16,185,129,.15);color:#10B981';
+}
+function tagLabel(w) {
+  if (w >= 25) return `🔴 ALTO IMPACTO (+${w})`;
+  if (w >= 15) return `🟡 MÉDIO IMPACTO (+${w})`;
+  return `🟢 BAIXO IMPACTO (+${w})`;
+}
+
+function renderProtos() {
+  document.getElementById('protoList').innerHTML = PROTOCOLS.map(p => `
+    <div class="proto-item ${cfg[p.id] ? 'on' : ''}" id="pi-${p.id}" onclick="toggleProto('${p.id}')">
+      <div class="sw ${cfg[p.id] ? 'on' : ''}" id="sw-${p.id}"></div>
+      <div class="proto-body">
+        <div class="proto-name">${p.name}</div>
+        <div class="proto-desc">${p.desc}</div>
+        <span class="proto-tag" style="${tagStyle(p.weight)}">${tagLabel(p.weight)}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleProto(id) {
+  cfg[id] = !cfg[id];
+  document.getElementById(`sw-${id}`).classList.toggle('on', cfg[id]);
+  document.getElementById(`pi-${id}`).classList.toggle('on', cfg[id]);
+  isMaster = PROTOCOLS.every(p => cfg[p.id]);
+  document.getElementById('masterSw').classList.toggle('on', isMaster);
+  updateRisk();
+}
+
+function toggleMaster() {
+  isMaster = !isMaster;
+  document.getElementById('masterSw').classList.toggle('on', isMaster);
+  PROTOCOLS.forEach(p => {
+    cfg[p.id] = isMaster;
+    document.getElementById(`sw-${p.id}`).classList.toggle('on', isMaster);
+    document.getElementById(`pi-${p.id}`).classList.toggle('on', isMaster);
+  });
+  updateRisk();
+}
+
+function riskScore() {
+  return PROTOCOLS.reduce((s, p) => s + (cfg[p.id] ? 0 : p.weight), 0);
+}
+
+function riskInfo(pct) {
+  if (pct <= 12) return { label: 'MUITO BAIXO', color: '#10B981' };
+  if (pct <= 33) return { label: 'BAIXO',       color: '#10B981' };
+  if (pct <= 55) return { label: 'MÉDIO',        color: '#f59e0b' };
+  if (pct <= 75) return { label: 'ALTO',         color: '#f97316' };
+  return             { label: 'CRÍTICO',      color: '#ef4444' };
+}
+
+function updateRisk() {
+  const score = riskScore();
+  const pct   = Math.round((score / MAX_RISK) * 100);
+  const info  = riskInfo(pct);
+  const fill  = document.getElementById('riskFill');
+  const badge = document.getElementById('riskBadge');
+  fill.style.width      = pct + '%';
+  fill.style.background = `linear-gradient(90deg, ${info.color}88, ${info.color})`;
+  badge.textContent     = info.label;
+  badge.style.background = info.color + '22';
+  badge.style.color      = info.color;
+}
+
+// ════════════════════════════════════════════
+// WEBSOCKET
+// ════════════════════════════════════════════
+function connect() {
+  if (ws && ws.readyState === WebSocket.OPEN) return;
+  const btn = document.getElementById('btnConnect');
+  btn.disabled = true;
+  btn.innerHTML = `<div class="spinner" style="width:16px;height:16px;border-width:2px"></div> Conectando...`;
+
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  ws = new WebSocket(`${proto}//${location.host}`);
+
+  ws.onopen = () => {
+    ws.send(JSON.stringify({ type: 'init' }));
+    setStatus('connecting', 'Aguardando QR...');
+    showQrSpinner('Aguardando QR Code...');
+  };
+
+  ws.onmessage = e => handle(JSON.parse(e.data));
+  ws.onerror   = () => setStatus('', 'Erro de conexão');
+  ws.onclose   = () => { if (!document.getElementById('vProgress').style.display.includes('none') ? false : true) setStatus('', 'Desconectado'); };
+}
+
+function handle(msg) {
+  switch (msg.type) {
+    case 'qr':
+      showQrCode(msg.qr);
+      break;
+    case 'authenticated':
+      showQrSpinner('Autenticado! Carregando grupos...');
+      setStatus('connecting', 'Autenticado...');
+      break;
+    case 'ready':
+      setStatus('connected', 'Conectado');
+      break;
+    case 'groups':
+      allGroups = msg.groups;
+      goStep2();
+      renderGroups();
+      break;
+    case 'scraping_start':
+      scrapeStartTime = Date.now();
+      goStep3(msg.total);
+      break;
+    case 'progress':
+      updateProgress(msg);
+      break;
+    case 'log':
+      addLog(msg.message, msg.level);
+      break;
+    case 'done':
+      showDone(msg);
+      break;
+    case 'error':
+      addLog('ERRO: ' + msg.message, 'error');
+      alert('Erro: ' + msg.message);
+      break;
+  }
+}
+
+// ════════════════════════════════════════════
+// QR STATE
+// ════════════════════════════════════════════
+function showQrSpinner(hint) {
+  const box = document.getElementById('qrBox');
+  box.className = 'qr-box';
+  box.innerHTML = `<div class="spinner"></div><div class="qr-box-hint">${hint}</div>`;
+}
+
+function showQrCode(dataUrl) {
+  const box = document.getElementById('qrBox');
+  box.className = 'qr-box has-qr';
+  box.innerHTML = `<img src="${dataUrl}" alt="QR Code">`;
+  document.getElementById('qrInstruct').style.display = 'block';
+  setStatus('connecting', 'Aguardando leitura...');
+}
+
+// ════════════════════════════════════════════
+// STEP NAVIGATION
+// ════════════════════════════════════════════
+function goBack() {
+  document.getElementById('vConfig').style.display  = 'none';
+  document.getElementById('vConnect').style.display = 'block';
+  document.getElementById('s1').className = 'step active';
+  document.getElementById('sn1').textContent = '1';
+  document.getElementById('s2').className = 'step';
+}
+
+function goStep2() {
+  document.getElementById('vConnect').style.display = 'none';
+  document.getElementById('vConfig').style.display  = 'block';
+  markDone('s1', 'sn1'); markActive('s2');
+}
+
+function goStep3(total) {
+  document.getElementById('vConfig').style.display   = 'none';
+  document.getElementById('vProgress').style.display = 'block';
+  markDone('s2', 'sn2'); markActive('s3');
+  document.getElementById('progText').textContent = `0 / ${total} grupos`;
+}
+
+function markDone(sid, nid) {
+  document.getElementById(sid).className = 'step done';
+  document.getElementById(nid).textContent = '✓';
+}
+function markActive(sid) {
+  document.getElementById(sid).className = 'step active';
+}
+
+// ════════════════════════════════════════════
+// GROUPS
+// ════════════════════════════════════════════
+function renderGroups(filter = '') {
+  const q    = filter.toLowerCase();
+  const list = q ? allGroups.filter(g => g.name.toLowerCase().includes(q)) : allGroups;
+
+  document.getElementById('groupCtCount').textContent = `${list.length} grupo${list.length !== 1 ? 's' : ''} encontrado${list.length !== 1 ? 's' : ''}`;
+
+  document.getElementById('groupScroll').innerHTML = list.map(g => {
+    const safeId = encodeURIComponent(g.id);
+    return `
+      <div class="group-item ${selected.has(g.id) ? 'sel' : ''}" data-id="${esc(g.id)}" onclick="toggleGroup(this,'${esc(g.id)}')">
+        <div class="g-check">${selected.has(g.id) ? '✓' : ''}</div>
+        <div class="g-name">${esc(g.name)}</div>
+        <div class="g-count">${g.members} membros</div>
+      </div>`;
+  }).join('');
+
+  updateSelCount();
+}
+
+function toggleGroup(el, id) {
+  const decodedId = id;
+  if (selected.has(decodedId)) {
+    selected.delete(decodedId);
+    el.classList.remove('sel');
+    el.querySelector('.g-check').textContent = '';
+  } else {
+    selected.add(decodedId);
+    el.classList.add('sel');
+    el.querySelector('.g-check').textContent = '✓';
+  }
+  updateSelCount();
+}
+
+function selectAll()  { allGroups.forEach(g => selected.add(g.id)); renderGroups(document.getElementById('groupSearch').value); }
+function deselectAll(){ selected.clear(); renderGroups(document.getElementById('groupSearch').value); }
+function filterGroups(){ renderGroups(document.getElementById('groupSearch').value); }
+
+function updateSelCount() {
+  const n = selected.size;
+  document.getElementById('selCount').textContent = `${n} grupo${n !== 1 ? 's' : ''} selecionado${n !== 1 ? 's' : ''}`;
+  document.getElementById('btnStart').disabled = n === 0;
+}
+
+// ════════════════════════════════════════════
+// CONFIRM MODAL
+// ════════════════════════════════════════════
+function openConfirm() {
+  const score = riskScore();
+  const pct   = Math.round((score / MAX_RISK) * 100);
+  const info  = riskInfo(pct);
+
+  // Icon & style
+  let iconType, icon, title, desc, btnCls, btnTxt;
+  if (pct <= 33) {
+    iconType = 'ok';   icon = '✅'; title = 'Confirmar Varredura';
+    desc = `Tudo configurado! Nível de risco ${info.label}. Os protocolos ativos protegem bem o seu número.`;
+    btnCls = 'btn-success'; btnTxt = 'Confirmar e Iniciar';
+  } else if (pct <= 55) {
+    iconType = 'warn'; icon = '🔒'; title = 'Atenção — Risco Médio';
+    desc = `Alguns protocolos estão desativados. Risco ${info.label}. Recomendamos ativar mais proteções antes de continuar.`;
+    btnCls = 'btn-primary'; btnTxt = 'Entendido, Iniciar';
+  } else {
+    iconType = 'crit'; icon = '⚠️'; title = 'Risco Alto Detectado!';
+    desc = `Muitos protocolos estão desativados. Risco ${info.label}. Há chance considerável de bloqueio do número. Você assume integralmente a responsabilidade.`;
+    btnCls = 'btn-danger'; btnTxt = '⚠️ Assumo o Risco, Iniciar';
+  }
+
+  const modalIcon = document.getElementById('mIcon');
+  modalIcon.className = `modal-icon ${iconType}`;
+  modalIcon.textContent = icon;
+
+  document.getElementById('mTitle').textContent = title;
+  document.getElementById('mDesc').textContent  = desc;
+
+  const active   = PROTOCOLS.filter(p => cfg[p.id]);
+  const inactive = PROTOCOLS.filter(p => !cfg[p.id]);
+
+  document.getElementById('mSummary').innerHTML = [
+    `<span style="color:#00A8E8">◈</span> <strong>${selected.size}</strong> grupo${selected.size !== 1 ? 's' : ''} selecionado${selected.size !== 1 ? 's' : ''}`,
+    active.length   ? `<span style="color:#10B981">✓</span> ${active.length} protocolo${active.length !== 1 ? 's' : ''} de segurança ativo${active.length !== 1 ? 's' : ''}` : '',
+    inactive.length ? `<span style="color:#ef4444">✗</span> ${inactive.length} protocolo${inactive.length !== 1 ? 's' : ''} desativado${inactive.length !== 1 ? 's' : ''}` : '',
+    `<span style="color:${info.color}">◈</span> Nível de risco: <strong style="color:${info.color}">${info.label}</strong>`
+  ].filter(Boolean).join('<br>');
+
+  const btn = document.getElementById('mConfirmBtn');
+  btn.className = `btn ${btnCls}`;
+  btn.textContent = btnTxt;
+
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closeConfirm() { document.getElementById('overlay').classList.remove('show'); }
+
+function startScrape() {
+  closeConfirm();
+  ws.send(JSON.stringify({ type: 'scrape', selectedGroups: Array.from(selected), config: { ...cfg } }));
+}
+
+// ════════════════════════════════════════════
+// PROGRESS
+// ════════════════════════════════════════════
+function updateProgress(d) {
+  document.getElementById('progFill').style.width       = d.percent + '%';
+  document.getElementById('progText').textContent       = `${d.current} / ${d.total} grupos`;
+  document.getElementById('progPct').textContent        = d.percent + '%';
+  document.getElementById('progGroupName').textContent  = `Processando: ${d.groupName}`;
+}
+
+function addLog(msg, level = 'info') {
+  const c    = document.getElementById('logConsole');
+  if (!c) return;
+  const line = document.createElement('div');
+  line.className = 'log-line ' + level;
+  const t = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  line.textContent = `[${t}] ${msg}`;
+  c.appendChild(line);
+  c.scrollTop = c.scrollHeight;
+}
+
+// ════════════════════════════════════════════
+// DONE
+// ════════════════════════════════════════════
+function showDone(data) {
+  doneFilename = data.filename;
+  document.getElementById('doneContacts').textContent = (data.totalContacts || 0).toLocaleString('pt-BR');
+  document.getElementById('doneGroups').textContent   = data.totalGroups || 0;
+
+  const elapsed = Date.now() - scrapeStartTime;
+  const remaining = Math.max(0, MIN_SHOW_MS - elapsed);
+
+  setTimeout(() => {
+    document.getElementById('vProgress').style.display = 'none';
+    document.getElementById('vDone').style.display     = 'block';
+    document.getElementById('s3').className = 'step done';
+    document.getElementById('sn3').textContent = '✓';
+  }, remaining);
+}
+
+function downloadFile() {
+  document.getElementById('dlOverlay').classList.add('show');
+}
+
+function closeDlModal() {
+  document.getElementById('dlOverlay').classList.remove('show');
+}
+
+function confirmDownload() {
+  closeDlModal();
+  if (doneFilename) window.location.href = `/download/${doneFilename}`;
+}
+
+// ════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════
+function setStatus(state, txt) {
+  const pill = document.getElementById('statusPill');
+  const dot  = pill.querySelector('.status-dot');
+  const span = document.getElementById('statusTxt');
+  pill.className = 'status-pill ' + state;
+  span.textContent = txt;
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+boot();
+</script>
+</body>
+</html>
