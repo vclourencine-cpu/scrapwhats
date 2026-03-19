@@ -4,3 +4,6 @@ cache.json
 incremental-state.json
 *.xlsx
 .claude/
+dist/
+.env
+.env.local
