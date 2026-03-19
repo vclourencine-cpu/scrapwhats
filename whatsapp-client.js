@@ -1,4 +1,4 @@
-const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, makeInMemoryStore, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys')
+const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys')
 const { Boom } = require('@hapi/boom')
 const QRCode = require('qrcode')
 const XLSX = require('xlsx')
@@ -6,7 +6,7 @@ const pino = require('pino')
 const fs = require('fs')
 
 let activeSock = null
-let store = null
+let contacts = {}
 let currentWs = null
 let storedGroups = null
 
@@ -25,7 +25,6 @@ function log(ws, message, level = 'info') {
 async function initWhatsApp(ws) {
     currentWs = ws
 
-    // Already connected — resend groups
     if (activeSock && storedGroups) {
         send(ws, 'ready', {})
         send(ws, 'groups', { groups: buildGroupsList(storedGroups) })
@@ -39,15 +38,14 @@ async function initWhatsApp(ws) {
 
     const { state, saveCreds } = await useMultiFileAuthState('./session')
 
-    let version
+    let version = [2, 3000, 1023064315]
     try {
         const result = await fetchLatestBaileysVersion()
         version = result.version
-    } catch {
-        version = [2, 3000, 1023064315]
+        console.log('[Baileys] Versão WA:', version.join('.'))
+    } catch (e) {
+        console.log('[Baileys] Usando versão fallback:', version.join('.'))
     }
-
-    store = makeInMemoryStore({ logger: pino({ level: 'silent' }) })
 
     const sock = makeWASocket({
         version,
@@ -57,10 +55,24 @@ async function initWhatsApp(ws) {
         browser: ['ScrapWhats', 'Chrome', '1.0.0'],
         syncFullHistory: false,
         generateHighQualityLinkPreview: false,
+        markOnlineOnConnect: false,
     })
 
-    store.bind(sock.ev)
     activeSock = sock
+
+    // Collect contact names as they arrive
+    sock.ev.on('contacts.upsert', (list) => {
+        for (const c of list) {
+            contacts[c.id] = c
+        }
+    })
+
+    sock.ev.on('contacts.update', (list) => {
+        for (const c of list) {
+            if (contacts[c.id]) Object.assign(contacts[c.id], c)
+            else contacts[c.id] = c
+        }
+    })
 
     sock.ev.on('creds.update', saveCreds)
 
@@ -102,11 +114,12 @@ async function initWhatsApp(ws) {
 
             activeSock = null
             storedGroups = null
+            contacts = {}
 
             if (loggedOut) {
                 send(ws, 'disconnected', { reason: 'Sessão encerrada. Escaneie o QR novamente.' })
             } else {
-                log(ws, 'Conexão perdida. Reconectando...', 'warn')
+                log(ws, 'Conexão perdida. Reconectando em 3s...', 'warn')
                 setTimeout(() => initWhatsApp(ws), 3000)
             }
         }
@@ -130,9 +143,7 @@ async function scrapeGroups(ws, selectedGroupIds, config) {
 
     let groups = (storedGroups || []).filter(g => selectedGroupIds.includes(g.id))
 
-    if (config?.randomOrder) {
-        groups = groups.sort(() => Math.random() - 0.5)
-    }
+    if (config?.randomOrder) groups = groups.sort(() => Math.random() - 0.5)
 
     if (config?.incrementalMode) {
         const stateFile = './incremental-state.json'
@@ -141,16 +152,13 @@ async function scrapeGroups(ws, selectedGroupIds, config) {
             try { done = JSON.parse(fs.readFileSync(stateFile, 'utf8')) } catch {}
         }
         const remaining = groups.filter(g => !done.includes(g.id))
+        if (remaining.length === 0) fs.writeFileSync(stateFile, JSON.stringify([]))
         groups = (remaining.length === 0 ? groups : remaining).slice(0, 5)
-        if (remaining.length === 0) {
-            fs.writeFileSync(stateFile, JSON.stringify([]))
-        }
     }
 
     send(ws, 'scraping_start', { total: groups.length })
     log(ws, `Iniciando varredura de ${groups.length} grupo(s)...`)
 
-    // Cache
     const cacheFile = './cache.json'
     let cache = {}
     if (config?.useCache && fs.existsSync(cacheFile)) {
@@ -193,27 +201,23 @@ async function scrapeGroups(ws, selectedGroupIds, config) {
                     nome = typeof cached === 'object' ? (cached.nome || '') : cached
                     statusNome = typeof cached === 'object' ? (cached.status || 'Sem Nome') : (cached ? 'Salvo na Agenda' : 'Sem Nome')
                 } else {
-                    try {
-                        const contact = store?.contacts?.[jid]
-                        if (contact?.name) {
-                            nome = contact.name
-                            statusNome = 'Salvo na Agenda'
-                        } else if (contact?.notify) {
-                            nome = contact.notify
-                            statusNome = 'Nome do WhatsApp'
-                        } else {
-                            statusNome = 'Sem Nome'
-                        }
+                    const contact = contacts[jid]
+                    if (contact?.name) {
+                        nome = contact.name
+                        statusNome = 'Salvo na Agenda'
+                    } else if (contact?.notify) {
+                        nome = contact.notify
+                        statusNome = 'Nome do WhatsApp'
+                    } else {
+                        statusNome = 'Sem Nome'
+                    }
 
-                        if (config?.useCache) {
-                            cache[phone] = { nome, status: statusNome }
-                        }
+                    if (config?.useCache) {
+                        cache[phone] = { nome, status: statusNome }
+                    }
 
-                        if (config?.randomDelays) {
-                            await sleep(800 + Math.random() * 2400)
-                        }
-                    } catch {
-                        statusNome = 'Erro na consulta'
+                    if (config?.randomDelays) {
+                        await sleep(800 + Math.random() * 2400)
                     }
                 }
 
