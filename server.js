@@ -35,6 +35,18 @@ app.get('/download/:filename', (req, res) => {
 });
 
 wss.on('connection', (ws) => {
+    // Keepalive ping every 20s to prevent Render from closing idle connections
+    ws.isAlive = true;
+    const pingInterval = setInterval(() => {
+        if (!ws.isAlive) { clearInterval(pingInterval); return ws.terminate(); }
+        ws.isAlive = false;
+        ws.ping();
+    }, 20000);
+
+    ws.on('pong', () => { ws.isAlive = true; });
+
+    ws.on('close', () => { clearInterval(pingInterval); });
+
     ws.on('message', async (data) => {
         try {
             const msg = JSON.parse(data);
@@ -42,6 +54,8 @@ wss.on('connection', (ws) => {
                 await initWhatsApp(ws);
             } else if (msg.type === 'scrape') {
                 await scrapeGroups(ws, msg.selectedGroups, msg.config);
+            } else if (msg.type === 'ping') {
+                ws.send(JSON.stringify({ type: 'pong' }));
             }
         } catch (err) {
             ws.send(JSON.stringify({ type: 'error', message: err.message }));

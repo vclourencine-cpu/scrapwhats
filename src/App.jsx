@@ -334,6 +334,15 @@ export default function App() {
       socket.send(JSON.stringify({ type: 'init' }))
       setWsStatus('connecting')
       setStatusText('Aguardando QR...')
+      // Client-side keepalive: send ping every 15s
+      const keepalive = setInterval(() => {
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ type: 'ping' }))
+        } else {
+          clearInterval(keepalive)
+        }
+      }, 15000)
+      socket._keepalive = keepalive
     }
 
     socket.onmessage = (e) => {
@@ -344,10 +353,20 @@ export default function App() {
       setWsStatus('')
       setStatusText('Erro de conexão')
       setConnecting(false)
+      setQrState('idle')
+      setQrHint('Falha na conexão com o servidor. Tente novamente.')
     }
 
-    socket.onclose = () => {
+    socket.onclose = (e) => {
+      if (socket._keepalive) clearInterval(socket._keepalive)
       setConnecting(false)
+      // Only show error if we haven't moved past connect step
+      if (e.code !== 1000) {
+        setWsStatus('')
+        setStatusText('Conexão encerrada')
+        setQrState('idle')
+        setQrHint('Conexão perdida. Clique em Conectar novamente.')
+      }
     }
   }, [handleWsMessage])
 
