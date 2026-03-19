@@ -9,9 +9,8 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-# Force npm + git to use HTTPS instead of SSH for all git dependencies
-RUN npm config set prefer-git-https true && \
-    git config --global url."https://github.com/".insteadOf "git@github.com:" && \
+# Redirect SSH git URLs to HTTPS (fixes Baileys eslint-config dependency)
+RUN git config --global url."https://github.com/".insteadOf "git@github.com:" && \
     git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
 
 WORKDIR /app
