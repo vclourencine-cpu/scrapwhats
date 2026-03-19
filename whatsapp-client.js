@@ -35,12 +35,34 @@ async function initWhatsApp(ws) {
         activeClient = null;
     }
 
+    // Detect Chromium path in Docker/Render environments
+    const fs = require('fs');
+    const chromiumPaths = [
+        process.env.PUPPETEER_EXECUTABLE_PATH,
+        '/usr/bin/chromium',
+        '/usr/bin/chromium-browser',
+        '/usr/bin/google-chrome',
+        '/usr/bin/google-chrome-stable',
+    ].filter(Boolean);
+    const executablePath = chromiumPaths.find(p => fs.existsSync(p)) || undefined;
+    if (executablePath) console.log('[Puppeteer] Chromium encontrado em:', executablePath);
+    else console.log('[Puppeteer] Usando Chromium bundled do Puppeteer');
+
     const client = new Client({
         authStrategy: new LocalAuth({ dataPath: './session' }),
         puppeteer: {
             headless: true,
-            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+            executablePath,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--no-first-run',
+                '--no-zygote',
+                '--single-process',
+                '--disable-extensions',
+            ]
         }
     });
     activeClient = client;
