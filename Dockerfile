@@ -9,14 +9,14 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-# Redirect SSH git URLs to HTTPS (fixes Baileys eslint-config dependency)
-RUN git config --global url."https://github.com/".insteadOf "git@github.com:" && \
-    git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
-
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --legacy-peer-deps --omit=dev
+
+# Configure git to use HTTPS AND install — same shell session guarantees git config is active
+RUN git config --global url."https://github.com/".insteadOf "git@github.com:" && \
+    git config --global url."https://github.com/".insteadOf "ssh://git@github.com/" && \
+    npm install --legacy-peer-deps --omit=dev
 
 COPY . .
 
