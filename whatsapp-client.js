@@ -38,8 +38,9 @@ async function initWhatsApp(ws) {
     const client = new Client({
         authStrategy: new LocalAuth({ dataPath: './session' }),
         puppeteer: {
-            headless: false,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            headless: true,
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
         }
     });
     activeClient = client;

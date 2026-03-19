@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: scrapwhats-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    disk:
+      name: session-data
+      mountPath: /app/session
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production

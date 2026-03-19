@@ -7,7 +7,19 @@ const { initWhatsApp, scrapeGroups } = require('./whatsapp-client');
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({
+    server,
+    verifyClient: () => true  // accept cross-origin WebSocket connections
+});
+
+// CORS — accept any origin
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') return res.sendStatus(204);
+    next();
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
@@ -37,8 +49,8 @@ wss.on('connection', (ws) => {
     });
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`\n🚀 ScrapWhats | iatize CRM`);
+    console.log(`\n ScrapWhats | iatize CRM`);
     console.log(`   Acesse: http://localhost:${PORT}\n`);
 });
