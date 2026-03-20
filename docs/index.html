@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ScrapWhats — iatize CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080f1d;
+      --cyan: #00A8E8;
+      --cyan2: #0077cc;
+      --card: rgba(255,255,255,0.03);
+      --border: rgba(255,255,255,0.07);
+    }
+
+    body {
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(0,168,232,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(0,119,204,0.06) 0%, transparent 55%);
+      color: #fff;
+      font-family: Inter, system-ui, sans-serif;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(8,15,29,0.85);
+    }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .logo-text { font-weight: 800; font-size: 18px; }
+    .logo-sub { font-size: 11px; color: #555; }
+    .insta-link {
+      display: flex; align-items: center; gap: 8px;
+      color: #aaa; text-decoration: none; font-size: 13px;
+      padding: 8px 16px; border: 1px solid var(--border);
+      border-radius: 999px; transition: all .2s;
+    }
+    .insta-link:hover { border-color: rgba(0,168,232,0.4); color: var(--cyan); }
+
+    /* ─── HERO ─── */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 60px;
+      max-width: 720px; margin: 0 auto;
+    }
+    .badge {
+      display: inline-block; margin-bottom: 20px;
+      padding: 6px 16px; border-radius: 999px;
+      background: rgba(0,168,232,0.1); border: 1px solid rgba(0,168,232,0.25);
+      color: var(--cyan); font-size: 12px; font-weight: 600; letter-spacing: .5px;
+    }
+    h1 {
+      font-size: clamp(36px, 6vw, 58px);
+      font-weight: 900; line-height: 1.1;
+      background: linear-gradient(135deg, #fff 40%, #00A8E8);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 20px;
+    }
+    .hero p {
+      font-size: 17px; color: #777; max-width: 520px; margin: 0 auto 40px;
+    }
+
+    /* ─── BOOKMARKLET BUTTON ─── */
+    .bm-section {
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+      margin-bottom: 16px;
+    }
+    .bm-hint { font-size: 13px; color: #555; }
+    .bm-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 16px 28px;
+      background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+      border-radius: 14px; color: #fff; font-weight: 700; font-size: 15px;
+      text-decoration: none; cursor: grab;
+      box-shadow: 0 4px 24px rgba(0,168,232,0.35);
+      user-select: none; transition: transform .15s, box-shadow .15s;
+    }
+    .bm-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,168,232,0.45); }
+    .bm-btn:active { cursor: grabbing; }
+
+    .drag-arrow {
+      display: flex; align-items: center; gap: 8px;
+      color: var(--cyan); font-size: 13px; font-weight: 500; opacity: .7;
+    }
+
+    /* ─── STEPS ─── */
+    .steps-section {
+      max-width: 860px; margin: 0 auto 80px; padding: 0 24px;
+    }
+    .steps-section h2 {
+      text-align: center; font-size: 26px; font-weight: 800;
+      margin-bottom: 40px; color: #fff;
+    }
+    .steps {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .step {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px;
+      transition: border-color .2s, transform .2s;
+    }
+    .step:hover { border-color: rgba(0,168,232,0.25); transform: translateY(-2px); }
+    .step-num {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 14px; margin-bottom: 14px;
+    }
+    .step h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .step p { font-size: 13px; color: #666; }
+
+    /* ─── FEATURES ─── */
+    .features {
+      max-width: 860px; margin: 0 auto 80px; padding: 0 24px;
+    }
+    .features h2 {
+      text-align: center; font-size: 26px; font-weight: 800; margin-bottom: 40px;
+    }
+    .feat-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .feat {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 16px;
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .feat-icon { font-size: 20px; flex-shrink: 0; }
+    .feat-text { font-size: 13px; color: #888; }
+    .feat-text strong { display: block; color: #ddd; font-size: 13px; margin-bottom: 2px; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 48px; text-align: center;
+      color: #444; font-size: 13px;
+    }
+    footer a { color: var(--cyan); text-decoration: none; }
+
+    @media (max-width: 600px) {
+      header { padding: 16px 20px; }
+      .hero { padding: 56px 20px 40px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div>
+      <div class="logo-text">ScrapWhats</div>
+      <div class="logo-sub">by iatize CRM</div>
+    </div>
+  </div>
+  <a class="insta-link" href="https://www.instagram.com/iatize.ia/" target="_blank">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+    @iatize.ia
+  </a>
+</header>
+
+<section class="hero">
+  <div class="badge">✨ 100% grátis · sem instalação · sem servidor</div>
+  <h1>Extraia contatos dos seus grupos do WhatsApp</h1>
+  <p>Arraste o botão abaixo para a barra de favoritos do navegador. Pronto — use em qualquer computador.</p>
+
+  <div class="bm-section">
+    <div class="drag-arrow">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      Arraste este botão para sua barra de favoritos
+    </div>
+
+    <!-- BOOKMARKLET LINK — arraste para a barra de favoritos -->
+    <a class="bm-btn"
+      href="javascript:(function(){var s=document.createElement('script');s.src='https://vclourencine-cpu.github.io/scrapwhats/bookmarklet.js?v='+Date.now();document.head.appendChild(s);})();"
+      onclick="return handleClick(event)">
+      ⚡ ScrapWhats
+    </a>
+
+    <div class="bm-hint">Depois, vá para <strong style="color:#ddd">web.whatsapp.com</strong> e clique nele para iniciar</div>
+  </div>
+</section>
+
+<!-- PASSOS -->
+<section class="steps-section">
+  <h2>Como usar — 4 passos simples</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Arraste o botão</h3>
+      <p>Arraste o botão azul "⚡ ScrapWhats" acima para a barra de favoritos do seu navegador.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>Abra o WhatsApp Web</h3>
+      <p>Acesse <strong style="color:#ddd">web.whatsapp.com</strong>, escaneie o QR com seu celular e aguarde carregar.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Clique no bookmarklet</h3>
+      <p>Na barra de favoritos, clique em "⚡ ScrapWhats". Um painel vai aparecer sobre o WhatsApp.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <h3>Selecione e extraia</h3>
+      <p>Escolha os grupos, clique em Extrair e o arquivo Excel é baixado automaticamente.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+  <h2>Por que usar o ScrapWhats?</h2>
+  <div class="feat-grid">
+    <div class="feat">
+      <div class="feat-icon">🔒</div>
+      <div class="feat-text"><strong>Privacidade total</strong>Seus dados nunca saem do seu navegador. Nenhum servidor recebe suas informações.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">⚡</div>
+      <div class="feat-text"><strong>Sem instalação</strong>Funciona direto no navegador. Sem Node.js, sem apps, sem permissões.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📊</div>
+      <div class="feat-text"><strong>Excel organizado</strong>Uma aba por grupo com Telefone, Nome e Status do contato.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🆓</div>
+      <div class="feat-text"><strong>100% gratuito</strong>Sem planos, sem cadastro, sem limites. Sempre.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🌐</div>
+      <div class="feat-text"><strong>Qualquer computador</strong>Windows, Mac ou Linux — funciona onde o WhatsApp Web funcionar.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🔁</div>
+      <div class="feat-text"><strong>Sempre atualizado</strong>O script é carregado online — melhorias chegam automaticamente.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Feito com ❤️ por <a href="https://www.instagram.com/iatize.ia/" target="_blank">@iatize.ia</a> —
+  ScrapWhats é uma ferramenta independente e não é afiliada ao WhatsApp.
+</footer>
+
+<script>
+  function handleClick(e) {
+    // Se o usuário clicar (não arrastar), mostrar instrução
+    alert('🔖 Não clique aqui diretamente!\n\nARRASTE este botão para a barra de favoritos do seu navegador.\n\nDepois vá para web.whatsapp.com e clique nele lá.');
+    e.preventDefault();
+    return false;
+  }
+</script>
+
+</body>
+</html>
