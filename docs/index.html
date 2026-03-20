@@ -125,7 +125,7 @@
           Clique, segure e arraste para a barra acima
         </div>
         <a class="bm-btn"
-          href="javascript:(function(){var s=document.createElement('script');s.src='https://vclourencine-cpu.github.io/scrapwhats/bookmarklet.js?v='+Date.now();document.head.appendChild(s);})();"
+          href="javascript:(function(){fetch('https://vclourencine-cpu.github.io/scrapwhats/bookmarklet.js?v='+Date.now()).then(function(r){return r.text()}).then(function(t){var b=new Blob([t],{type:'text/javascript'});var u=URL.createObjectURL(b);var s=document.createElement('script');s.src=u;document.head.appendChild(s)}).catch(function(){alert('Erro ao carregar.\n\nUse o m\u00e9todo alternativo:\nF12 \u2192 Console \u2192 cole o c\u00f3digo')})})();"
           onclick="alert('⚠️ Não clique — ARRASTE!\n\nSegure o botão com o mouse e arraste até a barra de favoritos do seu navegador (a barra que fica logo abaixo da barra de endereço).');return false;">
           ⚡ ScrapWhats
         </a>
